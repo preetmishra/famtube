@@ -9,4 +9,7 @@ const videoSchema = new mongoose.Schema({
   thumbnails: Object,
 });
 
-module.exports = mongoose.model("Video", videoSchema);
+const schema = mongoose.model("Video", videoSchema);
+schema.createIndexes({ title: "text", description: "text" });
+
+module.exports = schema;

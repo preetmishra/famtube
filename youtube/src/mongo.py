@@ -1,6 +1,5 @@
 from config import Config
-from mongoengine import (DateTimeField, DictField, Document, StringField,
-                         connect)
+from mongoengine import DateTimeField, DictField, Document, StringField, connect
 
 DATABASE_NAME = "famtube"
 
@@ -24,8 +23,16 @@ class Videos(Document):
     publishedAt = DateTimeField(required=True)
     thumbnails = DictField()
 
-    # Index video_id and set default order as descending based upon publishedAt.
-    meta = {"indexes": ["videoId"], "ordering": ["-publishedAt"]}
+    # Index video_id and use text index for (title, description) for search queries.
+    meta = {
+        "indexes": [
+            "videoId",
+            {
+                "fields": ["$title", "$description"],
+            },
+        ],
+        "ordering": ["-publishedAt"],
+    }
 
 
 Database().initialize()
