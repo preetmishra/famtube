@@ -67,6 +67,18 @@ class YouTube:
 
         logger.info(f"Saved {save_count} new videos to the database")
 
+    def __has_api_key_expired(self, response, json_response, api_key) -> bool:
+        if (
+            response.status_code == 403
+            and "exceeded" in json_response["error"]["message"]
+        ):
+            logger.warn(f"The following API key has reached its limit <{api_key.key}>")
+            logger.info(f"Marking <{api_key.key}> as expired")
+            api_key.has_expired = True
+            return True
+
+        return False
+
     def __fetch_videos(self) -> None:
         logger.info("Attempting to fetch videos from YouTube")
 
@@ -99,15 +111,7 @@ class YouTube:
                 r = requests.get(API, params=params)
                 json_response = r.json()
 
-                if (
-                    r.status_code == 403
-                    and "exceeded" in json_response["error"]["message"]
-                ):
-                    logger.warn(
-                        f"The following API key has reached its limit <{api_key.key}>"
-                    )
-                    logger.info(f"Marking <{api_key.key}> as expired")
-                    api_key.has_expired = True
+                if self.__has_api_key_expired(r, json_response, api_key):
                     continue
 
                 if r.status_code < 200 or r.status_code >= 300:
