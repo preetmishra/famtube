@@ -112,9 +112,8 @@ class YouTube:
 
                 if r.status_code < 200 or r.status_code >= 300:
                     logger.error(
-                        "Could not fetch videos from YouTube due to unknown reasons"
+                        f"Could not fetch videos from YouTube due to the following reason: {json_response['error']['message']}"
                     )
-                    logger.error(json_response)
                     continue
 
                 has_any_api_key_worked = True
