@@ -11,6 +11,7 @@ export default function useVideos() {
   const [hasMore, setHasMore] = useState(true);
 
   const pageNumber = useRef(0);
+  const videoIds = useRef(new Set());
 
   const isInitialMount = useRef(true);
 
@@ -31,7 +32,20 @@ export default function useVideos() {
 
         setVideos((state) => {
           const prev = state ? [...state] : [];
-          return prev.concat(data);
+          const next = [];
+
+          for (const item of data) {
+            const _id = item._id;
+
+            if (videoIds.current.has(_id)) {
+              continue;
+            }
+
+            videoIds.current.add(_id);
+            next.push(item);
+          }
+
+          return prev.concat(next);
         });
       })
       .catch((error) => {
