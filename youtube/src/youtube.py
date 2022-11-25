@@ -3,6 +3,8 @@ import logging
 from typing import Dict, List, Union
 
 import requests
+from mongo import Videos
+from mongoengine.errors import NotUniqueError
 
 logger = logging.getLogger(__name__)
 
@@ -58,9 +60,13 @@ class YouTube:
 
             logger.info(f"Found {response['pageInfo']['resultsPerPage']} videos")
 
-            # TODO: Put the items in the database.
             for item in response["items"]:
-                print(self.__parse_snippet(item))
+                try:
+                    Videos(**self.__parse_snippet(item)).save()
+                except NotUniqueError as e:
+                    logger.info(
+                        "Found a video that already exists in our database. Ignoring it"
+                    )
 
         except Exception as e:
             logger.error("We are unable to connect to the API. Is your internet down?")
