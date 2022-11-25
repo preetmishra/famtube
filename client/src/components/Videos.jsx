@@ -1,29 +1,10 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
 
+import useVideos from "./hooks/useVideos";
 import YouTubeCard from "./YouTubeCard";
 
-const API = `${process.env.REACT_APP_API}/videos`;
-
 export default function Videos() {
-  const [videos, setVideos] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    axios
-      .get(API)
-      .then((res) => res.data)
-      .then((payload) => {
-        setVideos(payload);
-      })
-      .catch((err) => {
-        console.error("Something went wrong");
-        console.error(err);
-        setError(err);
-      })
-      .finally(() => setIsLoading(false));
-  }, []);
+  const [videos, isLoading, error, hasMore, fetchMoreVideos] = useVideos();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -38,7 +19,7 @@ export default function Videos() {
       <div className="space-y-3">
         <div className="text-lg">
           <p>Looks like there are no videos at the moment.</p>
-          <p>Please wait for a while (10 seconds) and click refresh.</p>
+          <p>Please wait for a while (10-20 seconds) and click refresh.</p>
         </div>
         <button
           className="bg-fam-yellow-light text-fam-black-dark px-6 py-2 rounded-full font-medium -ml-0.5"
@@ -51,10 +32,34 @@ export default function Videos() {
   }
 
   return (
-    <div className="flex flex-wrap gap-8">
-      {videos.map((video, index) => (
-        <YouTubeCard {...video} key={video._id} />
-      ))}
-    </div>
+    <InfiniteScroll
+      dataLength={videos.length}
+      hasMore={hasMore}
+      next={fetchMoreVideos}
+      className="space-y-4 md:space-y-6"
+      loader={<div>Loading...</div>}
+      endMessage={
+        <div className="pt-8 flex items-center flex-col justify-center">
+          <p className="text-lg">You've made it to the end</p>
+          <button
+            className="bg-fam-yellow-light text-fam-black-dark px-6 py-2 rounded-full font-medium mt-4"
+            onClick={() =>
+              setTimeout(() => {
+                // eslint-disable-next-line no-self-assign
+                window.location.href = window.location.href;
+              })
+            }
+          >
+            Refresh to fetch latest scraped videos
+          </button>
+        </div>
+      }
+    >
+      <div className="flex flex-wrap gap-8">
+        {videos.map((video) => {
+          return <YouTubeCard {...video} key={video._id} />;
+        })}
+      </div>
+    </InfiniteScroll>
   );
 }
