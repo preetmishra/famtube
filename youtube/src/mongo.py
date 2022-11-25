@@ -1,5 +1,7 @@
+from mongoengine import (DateTimeField, DictField, Document, StringField,
+                         connect)
+
 from config import Config
-from mongoengine import DateTimeField, DictField, Document, StringField, connect
 
 DATABASE_NAME = "famtube"
 

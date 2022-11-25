@@ -3,8 +3,9 @@ import logging
 from typing import Dict, List, Union
 
 import requests
-from mongo import Videos
 from mongoengine.errors import NotUniqueError
+
+from mongo import Videos
 
 logger = logging.getLogger(__name__)
 
