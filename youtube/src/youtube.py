@@ -108,20 +108,20 @@ class YouTube:
                     f"Attempting to make a request to YouTube for <query: {QUERY}> with <APIKey key={api_key.key}>"
                 )
 
-                r = requests.get(API, params=params)
-                json_response = r.json()
+                response = requests.get(API, params=params)
+                payload = response.json()
 
-                if self.__has_api_key_expired(r, json_response, api_key):
+                if self.__has_api_key_expired(response, payload, api_key):
                     continue
 
-                if r.status_code < 200 or r.status_code >= 300:
+                if response.status_code < 200 or response.status_code >= 300:
                     logger.error(
-                        f"Could not fetch videos from YouTube due to the following reason: {json_response['error']['message']}"
+                        f"Could not fetch videos from YouTube due to the following reason: {payload['error']['message']}"
                     )
                     continue
 
                 has_any_api_key_worked = True
-                self.__save_videos(json_response)
+                self.__save_videos(payload)
 
                 break
             except Exception as e:
