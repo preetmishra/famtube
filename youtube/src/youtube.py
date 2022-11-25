@@ -88,8 +88,10 @@ class YouTube:
             if api_key.has_expired:
                 continue
 
-            CURRENT_UTC_DATE_TIME = datetime.datetime.now(
-                datetime.timezone.utc
+            # Use a time from two days before.
+            PUBLISHED_AFTER = (
+                datetime.datetime.now(datetime.timezone.utc)
+                - datetime.timedelta(days=2)
             ).isoformat()
             QUERY = "official"  # TODO: Accept q from environment variable.
 
@@ -98,7 +100,7 @@ class YouTube:
                 "type": "video",
                 "part": "id, snippet",
                 "maxResults": 10,
-                "publishedAfter": CURRENT_UTC_DATE_TIME,
+                "publishedAfter": PUBLISHED_AFTER,
                 "key": api_key.key,
                 "q": QUERY,
             }
