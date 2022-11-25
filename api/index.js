@@ -1,6 +1,7 @@
 const dotenv = require("dotenv");
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const videosRouter = require("./routes/videos.routes");
@@ -17,6 +18,9 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(morgan("tiny"));
+
+// NOTE: Should be more restrictive in production.
+app.use(cors());
 
 app.use("/videos", videosRouter);
 
