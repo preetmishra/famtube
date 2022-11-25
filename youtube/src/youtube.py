@@ -43,6 +43,30 @@ class YouTube:
             "thumbnails": self.__parse_thumbnails(snippet["thumbnails"]),
         }
 
+    def __save_videos(self, response) -> None:
+        total_videos = response["pageInfo"]["resultsPerPage"]
+
+        logger.info(f"Found {total_videos} videos")
+        save_count = 0
+
+        for item_number, item in enumerate(response["items"], start=1):
+            logger.info(f"Processing {item_number}/{total_videos}")
+
+            try:
+                Videos(**self.__parse_snippet(item)).save()
+                save_count += 1
+            except NotUniqueError as e:
+                logger.info(
+                    "Found a video that already exists in our database. Ignoring it"
+                )
+            except Exception as e:
+                logger.error(
+                    "An unexpected error has occurred while saving the document to the database"
+                )
+                logger.error(e)
+
+        logger.info(f"Saved {save_count} new videos to the database")
+
     def __fetch_videos(self) -> None:
         logger.info("Attempting to fetch videos from YouTube")
 
@@ -94,28 +118,7 @@ class YouTube:
                     continue
 
                 has_any_api_key_worked = True
-                total_videos = json_response["pageInfo"]["resultsPerPage"]
-
-                logger.info(f"Found {total_videos} videos")
-                save_count = 0
-
-                for item_number, item in enumerate(json_response["items"], start=1):
-                    logger.info(f"Processing {item_number}/{total_videos}")
-
-                    try:
-                        Videos(**self.__parse_snippet(item)).save()
-                        save_count += 1
-                    except NotUniqueError as e:
-                        logger.info(
-                            "Found a video that already exists in our database. Ignoring it"
-                        )
-                    except Exception as e:
-                        logger.error(
-                            "An unexpected error has occurred while saving the document to the database"
-                        )
-                        logger.error(e)
-
-                logger.info(f"Saved {save_count} new videos to the database")
+                self.__save_videos(json_response)
 
                 break
             except Exception as e:
