@@ -1,7 +1,12 @@
+import datetime
 import logging
-from typing import List
+from typing import Dict, List, Union
+
+import requests
 
 logger = logging.getLogger(__name__)
+
+API = "https://youtube.googleapis.com/youtube/v3/search"
 
 
 class YouTube:
@@ -10,3 +15,53 @@ class YouTube:
 
     def main(self) -> None:
         logger.info("Initializing YouTube script")
+        self.__fetch_videos()
+
+    def __parse_thumbnails(self, thumbnails: Dict[str, any]) -> Dict[str, str]:
+        return dict(
+            [(quality, metadata["url"]) for quality, metadata in thumbnails.items()]
+        )
+
+    def __parse_snippet(
+        self, item: Dict[str, any]
+    ) -> Dict[str, Union[str, Dict[str, str]]]:
+        snippet = item["snippet"]
+
+        return {
+            "videoId": item["id"]["videoId"],
+            "title": snippet["title"],
+            "description": snippet["description"],
+            "publishedAt": snippet["publishedAt"],
+            "thumbnails": self.__parse_thumbnails(snippet["thumbnails"]),
+        }
+
+    def __fetch_videos(self) -> None:
+        CURRENT_UTC_DATE_TIME = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        QUERY = "official"  # TODO: Accept q from environment variable.
+
+        params = {
+            "order": "date",
+            "type": "video",
+            "part": "id, snippet",
+            "maxResults": 10,
+            "publishedAfter": CURRENT_UTC_DATE_TIME,
+            "key": self.API_KEYS[0],  # FIXME: Cycle through API keys.
+            "q": QUERY,
+        }
+
+        # FIXME: Catch exceptions precisely and set a fallback for cycling API keys.
+        try:
+            logger.info(f"Attempting to fetch videos for <query: {QUERY}>")
+
+            r = requests.get(API, params=params)
+            response = r.json()
+
+            logger.info(f"Found {response['pageInfo']['resultsPerPage']} videos")
+
+            # TODO: Put the items in the database.
+            for item in response["items"]:
+                print(self.__parse_snippet(item))
+
+        except Exception as e:
+            logger.error("We are unable to connect to the API. Is your internet down?")
+            logger.error(e)
