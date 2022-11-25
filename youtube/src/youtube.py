@@ -11,9 +11,15 @@ logger = logging.getLogger(__name__)
 API = "https://youtube.googleapis.com/youtube/v3/search"
 
 
+class APIKey:
+    def __init__(self, key: str) -> None:
+        self.key = key
+        self.has_expired = False
+
+
 class YouTube:
-    def __init__(self, API_KEYS: List[str]) -> None:
-        self.API_KEYS = API_KEYS
+    def __init__(self, api_keys: List[str]) -> None:
+        self.API_KEYS = [APIKey(key) for key in api_keys]
 
     def main(self) -> None:
         logger.info("Initializing YouTube script")
@@ -38,36 +44,83 @@ class YouTube:
         }
 
     def __fetch_videos(self) -> None:
-        CURRENT_UTC_DATE_TIME = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        QUERY = "official"  # TODO: Accept q from environment variable.
+        logger.info("Attempting to fetch videos from YouTube")
 
-        params = {
-            "order": "date",
-            "type": "video",
-            "part": "id, snippet",
-            "maxResults": 10,
-            "publishedAfter": CURRENT_UTC_DATE_TIME,
-            "key": self.API_KEYS[0],  # FIXME: Cycle through API keys.
-            "q": QUERY,
-        }
+        has_any_api_key_worked = False
 
-        # FIXME: Catch exceptions precisely and set a fallback for cycling API keys.
-        try:
-            logger.info(f"Attempting to fetch videos for <query: {QUERY}>")
+        for api_key in self.API_KEYS:
+            if api_key.has_expired:
+                continue
 
-            r = requests.get(API, params=params)
-            response = r.json()
+            CURRENT_UTC_DATE_TIME = datetime.datetime.now(
+                datetime.timezone.utc
+            ).isoformat()
+            QUERY = "official"  # TODO: Accept q from environment variable.
 
-            logger.info(f"Found {response['pageInfo']['resultsPerPage']} videos")
+            params = {
+                "order": "date",
+                "type": "video",
+                "part": "id, snippet",
+                "maxResults": 10,
+                "publishedAfter": CURRENT_UTC_DATE_TIME,
+                "key": api_key.key,
+                "q": QUERY,
+            }
 
-            for item in response["items"]:
-                try:
-                    Videos(**self.__parse_snippet(item)).save()
-                except NotUniqueError as e:
-                    logger.info(
-                        "Found a video that already exists in our database. Ignoring it"
+            try:
+                logger.info(
+                    f"Attempting to make a request to YouTube for <query: {QUERY}> with <APIKey key={api_key.key}>"
+                )
+
+                r = requests.get(API, params=params)
+                json_response = r.json()
+
+                if (
+                    r.status_code == 403
+                    and "exceeded" in json_response["error"]["message"]
+                ):
+                    logger.warn(
+                        f"The following API key has reached its limit <{api_key.key}>"
                     )
+                    logger.info(f"Marking <{api_key.key}> as expired")
+                    api_key.has_expired = True
+                    continue
 
-        except Exception as e:
-            logger.error("We are unable to connect to the API. Is your internet down?")
-            logger.error(e)
+                if r.status_code < 200 or r.status_code >= 300:
+                    logger.error(
+                        "Could not fetch videos from YouTube due to unknown reasons"
+                    )
+                    logger.error(json_response)
+                    continue
+
+                has_any_api_key_worked = True
+                total_videos = json_response["pageInfo"]["resultsPerPage"]
+
+                logger.info(f"Found {total_videos} videos")
+                save_count = 0
+
+                for item_number, item in enumerate(json_response["items"], start=1):
+                    logger.info(f"Processing {item_number}/{total_videos}")
+
+                    try:
+                        Videos(**self.__parse_snippet(item)).save()
+                        save_count += 1
+                    except NotUniqueError as e:
+                        logger.info(
+                            "Found a video that already exists in our database. Ignoring it"
+                        )
+                    except Exception as e:
+                        logger.error(
+                            "An unexpected error has occurred while saving the document to the database"
+                        )
+                        logger.error(e)
+
+                logger.info(f"Saved {save_count} new videos to the database")
+
+                break
+            except Exception as e:
+                logger.error("An unexpected error has occurred")
+                logger.error(e)
+
+        if not has_any_api_key_worked:
+            logger.error("All API keys have reached their limit")

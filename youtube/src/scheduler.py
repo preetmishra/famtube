@@ -42,7 +42,8 @@ def main():
     job = Job(config=Config())
     job.setup()
 
-    logger.info(f"Scheduling YouTube to run every {JOB_FREQUENCY_IN_SECONDS} seconds")
+    logger.info(f"Scheduling a job to run every {JOB_FREQUENCY_IN_SECONDS} seconds")
+    logger.info(f"Please wait for 10 seconds...")
 
     schedule.every(JOB_FREQUENCY_IN_SECONDS).seconds.do(job.run)
 
