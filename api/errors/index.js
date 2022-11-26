@@ -1,7 +1,7 @@
 class DatabaseError extends Error {
   constructor() {
     super();
-    this.message = "Something went wrong while querying to the database";
+    this.message = "Something went wrong while querying the database";
     this.status = 500;
   }
 }
