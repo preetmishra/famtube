@@ -24,7 +24,7 @@ class Videos(Document):
     publishedAt = DateTimeField(required=True)
     thumbnails = DictField()
 
-    # Index video_id and use text index for (title, description) for search queries.
+    # Index video_id, publishedAt and use text index for (title, description) for search queries.
     meta = {
         "indexes": [
             "videoId",
