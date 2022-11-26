@@ -1,4 +1,4 @@
-const Video = require("../models/video");
+const Video = require("../models/video.models");
 
 const countDocuments = async ({ filter = {} }) => {
   return await Video.find(filter).count();
