@@ -59,7 +59,7 @@ QUERY=football # Defaults to "official"
 #### Application Server (api/.env)
 ```
 MONGODB_URI=mongodb://mongo:27017/famtube
-PORT=2917
+PORT=29171
 ```
 
 #### Client (client/.env)
