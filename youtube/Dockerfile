@@ -1,11 +1,12 @@
 FROM python:3.8
 
-WORKDIR /mnt/youtube
+WORKDIR /app
 
+# Install dependencies.
 COPY requirements.txt .
-
 RUN pip install -r requirements.txt
 
-COPY ./src ./src
+# Copy files (other than whatever is in .dockerignore) to the working directory.
+COPY . ./
 
 CMD [ "python", "./src/scheduler.py" ]

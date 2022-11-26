@@ -1,6 +1,50 @@
 version: "3.8"
 
 services:
+  famtube_client:
+    build:
+      context: ./client
+    container_name: famtube_client
+    ports:
+      - "29172:29172"
+    volumes:
+      - ./client:/app
+      - "/app/node_modules"
+    env_file: ./client/.env
+    depends_on:
+      - famtube_api
+    command: yarn start
+
+  famtube_api:
+    build:
+      context: ./api
+    container_name: famtube_api
+    ports:
+      - "29171:29171"
+    volumes:
+      - ./api:/app
+      - "/app/node_modules"
+    networks:
+      - famtube
+    depends_on:
+      - mongo
+    env_file: ./api/.env
+    command: npm start
+
+  famtube_youtube:
+    build:
+      context: ./youtube
+    container_name: famtube_youtube
+    volumes:
+      - ./youtube:/app
+      - "/app/node_modules"
+    depends_on:
+      - mongo
+    env_file: ./youtube/src/.env
+    command: python ./src/scheduler.py
+    networks:
+      - famtube
+
   mongo:
     image: mongo:4.4-rc
     container_name: famtube_mongo

@@ -1,0 +1,9 @@
+# Ignore static .env, accept envs at runtime.
+.env
+example.env
+.git/
+.gitignore
+.dockerignore
+.prettierrc
+npm-debug.log
+package-lock.json
