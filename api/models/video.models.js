@@ -5,7 +5,7 @@ const videoSchema = new mongoose.Schema({
   videoId: { type: String, unique: true, index: true },
   title: String,
   description: String,
-  publishedAt: Date,
+  publishedAt: { type: Date, index: true },
   thumbnails: Object,
 });
 

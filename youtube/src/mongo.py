@@ -1,5 +1,4 @@
-from mongoengine import (DateTimeField, DictField, Document, StringField,
-                         connect)
+from mongoengine import DateTimeField, DictField, Document, StringField, connect
 
 from config import Config
 
@@ -29,6 +28,7 @@ class Videos(Document):
     meta = {
         "indexes": [
             "videoId",
+            "publishedAt",
             {
                 "fields": ["$title", "$description"],
             },
