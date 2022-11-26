@@ -28,7 +28,7 @@ class Job:
                 f"Loaded YOUTUBE_API_KEYS successfully <{', '.join(YOUTUBE_API_KEYS)}>"
             )
 
-            self.job = YouTube(YOUTUBE_API_KEYS)
+            self.job = YouTube(YOUTUBE_API_KEYS, self.config.QUERY)
         except MissingYouTubeAPIKeysError as e:
             logger.error(e)
             logger.info("Shutting down the scheduler")

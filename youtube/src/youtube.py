@@ -19,8 +19,9 @@ class APIKey:
 
 
 class YouTube:
-    def __init__(self, api_keys: List[str]) -> None:
+    def __init__(self, api_keys: List[str], query: str) -> None:
         self.API_KEYS = [APIKey(key) for key in api_keys]
+        self.query = query
 
     def main(self) -> None:
         logger.info("Initializing YouTube script")
@@ -94,7 +95,6 @@ class YouTube:
                 datetime.datetime.now(datetime.timezone.utc)
                 - datetime.timedelta(days=2)
             ).isoformat()
-            QUERY = "official"  # TODO: Accept q from environment variable.
 
             params = {
                 "order": "date",
@@ -103,12 +103,12 @@ class YouTube:
                 "maxResults": 10,
                 "publishedAfter": PUBLISHED_AFTER,
                 "key": api_key.key,
-                "q": QUERY,
+                "q": self.query,
             }
 
             try:
                 logger.info(
-                    f"Attempting to make a request to YouTube for <query: {QUERY}> with <APIKey key={api_key.key}>"
+                    f"Attempting to make a request to YouTube for <query: {self.query}> with <APIKey key={api_key.key}>"
                 )
 
                 response = requests.get(API, params=params)
