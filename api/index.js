@@ -5,6 +5,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const videosRouter = require("./routes/videos.routes");
+const { errorHandler } = require("./errors/handler");
 
 // Set up database.
 require("./models/db");
@@ -30,6 +31,8 @@ app.use(function (req, res) {
     message: `${req.method} ${req.originalUrl} does not exist`,
   });
 });
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is listening at ${PORT}`);

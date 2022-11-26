@@ -1,14 +1,25 @@
+const { DatabaseError } = require("../errors");
 const Video = require("../models/video.models");
 
 const countDocuments = async ({ filter = {} }) => {
-  return await Video.find(filter).count();
+  try {
+    return await Video.find(filter).count();
+  } catch (err) {
+    console.error(err);
+    throw new DatabaseError();
+  }
 };
 
 const findAll = async ({ filter = {}, pageNumber = 0, pageLimit = 5 }) => {
-  return await Video.find(filter)
-    .sort({ publishedAt: -1 })
-    .skip(pageNumber * pageLimit)
-    .limit(pageLimit);
+  try {
+    return await Video.find(filter)
+      .sort({ publishedAt: -1 })
+      .skip(pageNumber * pageLimit)
+      .limit(pageLimit);
+  } catch (err) {
+    console.error(err);
+    throw new DatabaseError();
+  }
 };
 
 const fetchVideos = async ({ pageNumber, pageLimit, query }) => {
