@@ -11,11 +11,18 @@ const findAll = async ({ filter = {}, pageNumber = 0, pageLimit = 5 }) => {
     .limit(pageLimit);
 };
 
-const fetchVideos = async ({ pageNumber, pageLimit }) => {
+const fetchVideos = async ({ pageNumber, pageLimit, query }) => {
+  const filter = {};
+
+  // Use MongoDB's $text index to support full and partial searches.
+  if (query) {
+    filter["$text"] = { $search: query };
+  }
+
   return {
-    data: await findAll({ pageNumber, pageLimit }),
+    data: await findAll({ pageNumber, pageLimit, filter }),
     pagination: {
-      total: await countDocuments({}),
+      total: await countDocuments({ filter }),
       currentPageNumber: pageNumber,
       pageLimit,
     },

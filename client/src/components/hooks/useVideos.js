@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
+import useSearchQuery from "./useSearchQuery";
 
 const LIMIT = 10;
 const API = `${process.env.REACT_APP_API}/videos`;
@@ -9,6 +10,7 @@ export default function useVideos() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hasMore, setHasMore] = useState(true);
+  const query = useSearchQuery();
 
   const pageNumber = useRef(0);
   const videoIds = useRef(new Set());
@@ -21,6 +23,7 @@ export default function useVideos() {
         params: {
           pageLimit: LIMIT,
           pageNumber: pageNumber.current,
+          ...(query && { query }),
         },
       })
       .then((response) => {
@@ -54,7 +57,7 @@ export default function useVideos() {
         setError(error);
       })
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [query]);
 
   // Only fetch the posts from here the first time.
   useEffect(() => {

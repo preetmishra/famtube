@@ -1,9 +1,11 @@
 import InfiniteScroll from "react-infinite-scroll-component";
+import useSearchQuery from "./hooks/useSearchQuery";
 
 import useVideos from "./hooks/useVideos";
 import YouTubeCard from "./YouTubeCard";
 
 export default function Videos() {
+  const query = useSearchQuery();
   const [videos, isLoading, error, hasMore, fetchMoreVideos] = useVideos();
 
   if (isLoading) {
@@ -15,6 +17,14 @@ export default function Videos() {
   }
 
   if (videos.length === 0) {
+    if (query) {
+      return (
+        <div className="text-lg">
+          <p>No results found</p>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-3">
         <div className="text-lg">
@@ -37,7 +47,7 @@ export default function Videos() {
       hasMore={hasMore}
       next={fetchMoreVideos}
       className="space-y-4 md:space-y-6"
-      loader={<div>Loading...</div>}
+      loader={<></>}
       endMessage={
         <div className="pt-8 flex items-center flex-col justify-center">
           <p className="text-lg">You've made it to the end</p>

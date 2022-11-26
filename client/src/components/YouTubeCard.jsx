@@ -39,7 +39,7 @@ export default function YouTubeCard({
   publishedAt,
 }) {
   return (
-    <div className="w-[100%] md:w-[40%] lg:w-[30%] px-4 bg-fam-black-mid py-6 rounded-2xl space-y-6 break-all">
+    <div className="w-[100%] md:w-[40%] lg:w-[30%] px-4 bg-fam-black-mid py-6 rounded-2xl space-y-6 break-all flex-grow">
       <div
         className="w-full h-40 relative cursor-pointer"
         onClick={() => {
